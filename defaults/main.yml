@@ -1,0 +1,17 @@
+# This directory contains defaults for variables used in roles
+
+# URL to download installation archive from
+sikuli_jar_url: "https://launchpad.net/sikuli/sikulix/1.1.1/+download/sikulixsetup-1.1.1.jar"
+# checksum (md5) for this file
+sikuli_jar_md5: "d48c93dac5cf6149fd81e694ef4e4011"
+
+# location the install setup file should be downloaded to
+# on linux this is also the location where the installed file are kept
+sikuli_jar_dl_location: "/usr/etc/sikuli/sikulixsetup.jar"
+
+# default options for unattended setup
+sikuli_installopts: "options 1.1 buildv notes"
+
+## Mac specific Variable:
+# The folder the .app file and binary 'runsikulix' should be installed to
+sikuli_jar_dl_location_mac: "/Applications/Sikulix/sikulixsetup.jar"

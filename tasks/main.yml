@@ -1,0 +1,5 @@
+---
+
+# include setting up specific to operating system
+
+- include: "sikulix-setup-{{ ansible_os_family }}.yml"

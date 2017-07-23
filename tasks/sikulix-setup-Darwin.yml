@@ -1,0 +1,48 @@
+---
+
+# set up requirements and Sikulix on Mac like systems
+
+# check if sikulix is already installed by destined location
+- name: create folder for installs script
+  file:
+    path: "{{ sikuli_jar_dl_location_mac | dirname }}"
+    state: directory
+    mode: 0755
+
+- name: Download Sikulix archive
+  get_url:
+    url: "{{ sikuli_jar_url }}"
+    checksum: md5:"{{ sikuli_jar_md5 }}"
+    dest: "{{ sikuli_jar_dl_location_mac }}"
+    validate_certs: no
+
+- name: set file permissions again
+  file:
+    path: "{{ sikuli_jar_dl_location_mac }}"
+    mode: 0755
+
+- name: check actual sikulix on host
+  command: './runsikulix -h'
+  args:
+    chdir: "{{ sikuli_jar_dl_location_mac | dirname }}"
+  register: sikulixcheck
+  ignore_errors: true
+  changed_when: False
+
+- name: install via setup script
+  command: "java -jar sikulixsetup.jar {{ sikuli_installopts }}"
+  args:
+    chdir: "{{ sikuli_jar_dl_location_mac | dirname }}"
+  when: sikulixcheck|failed
+  register: sikulixinstall
+
+- name: check actual sikulix on host again
+  command: './runsikulix -h'
+  args:
+    chdir: "{{ sikuli_jar_dl_location_mac | dirname }}"
+  register: sikulixcheck2
+  changed_when: False
+
+#- name: "add {{  sikuli_jar_dl_location_mac | dirname }} to path in .bash_profile"
+#  lineinfile: path=~/.bash_profile state=present create=yes backrefs=yes regexp='PATH=(["]*)((?!.*?{{ sikuli_jar_dl_location_mac | dirname }}).*?)(["]*)$' line="PATH=\1\2:{{ sikuli_jar_dl_location_mac | dirname }}\3"
+#  become: false

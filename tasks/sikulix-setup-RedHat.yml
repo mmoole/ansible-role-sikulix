@@ -1,0 +1,101 @@
+---
+
+# set up requirements and Sikulix on RedHat like systems
+- name: install package for Sikulix on RedHat
+  yum: name={{ item }} state=present update_cache=yes
+  with_items:
+   #- autoconf
+   #- automake
+   - cairo
+   - cairo-devel
+   #- cmake
+   #- ffjpeg
+   #- g++
+   - gcc-c++
+   #- gcc
+   #- git
+   #- gtk+-devel
+   #- jasper-devel
+   #- leptonica
+   #- libicu-devel
+   #- libjpeg-devel
+   #- libpng-devel
+   #- libtiff-devel
+   #- libtool
+   #- numpy
+   - opencv
+   #- pango
+   #- pango-devel
+   #- pkgconfig
+   #- python-devel
+   - redhat-lsb-core
+   - tesseract
+   - tesseract-langpack-deu
+   - tesseract-langpack-fra
+   - unzip
+   #- yum-priorities
+   #- zlib-devel
+   #- java
+
+- name: create folder for installs script
+  file:
+    path: "{{ sikuli_jar_dl_location | dirname }}"
+    state: directory
+    mode: 0777
+
+- name: Download Sikulix archive
+  get_url:
+    url: "{{ sikuli_jar_url }}"
+    checksum: md5:"{{ sikuli_jar_md5 }}"
+    dest: "{{ sikuli_jar_dl_location }}"
+    mode: 755
+
+- name: set file permissions again
+  file:
+    path: "{{ sikuli_jar_dl_location }}"
+    mode: 0755
+
+- name: check actual sikulix on host
+  command: './runsikulix -h'
+  args:
+    chdir: "{{ sikuli_jar_dl_location | dirname }}"
+  register: sikulixcheck
+  ignore_errors: true
+  changed_when: False
+
+- name: install via setup script
+  command: "java -jar sikulixsetup.jar {{ sikuli_installopts }}"
+  args:
+    chdir: "{{ sikuli_jar_dl_location | dirname }}"
+  when: sikulixcheck|failed
+  register: sikulixinstall
+
+- name: check actual sikulix on host again
+  command: './runsikulix -h'
+  args:
+    chdir: "{{ sikuli_jar_dl_location | dirname }}"
+  register: sikulixcheck2
+  when: sikulixcheck|failed
+  changed_when: False
+
+- name: set permission on runsikulix
+  file:
+    path: "{{ item }}"
+    mode: 0755
+  with_items:
+    - "{{ sikuli_jar_dl_location | dirname }}/runsikulix"
+    - "{{ sikuli_jar_dl_location | dirname }}/sikulix.jar"
+
+- name: add runsikulix to /usr/bin as link
+  file:
+    src: "{{ sikuli_jar_dl_location | dirname }}/runsikulix"
+    dest: '/usr/bin/runsikulix'
+    state: link
+    mode: 0755
+
+- name: add sikulix.jar to /usr/bin as link
+  file:
+    src: "{{ sikuli_jar_dl_location | dirname }}/sikulix.jar"
+    dest: '/usr/bin/sikulix.jar'
+    state: link
+    mode: 0755
